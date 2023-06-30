@@ -22,7 +22,5 @@ RUN apt update && \
     libgstrtspserver-1.0-dev gstreamer1.0-rtsp \
     gstreamer1.0-rtsp gstreamer1.0-plugins-ugly  -y
 
-COPY --from=build /onvif_srvd/onvif_srvd /onvif_srvd/onvif_srvd
-COPY --from=build /wsdd/wsdd /wsdd/wsdd
 COPY --from=build /onvif-camera-mock /onvif-camera-mock
 ENTRYPOINT ["bash /onvif-camera-mock/start-onvif-camera.sh eth0 /onvif-camera/"]
