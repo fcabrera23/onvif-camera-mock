@@ -67,7 +67,8 @@ class TestRtspMediaFactory(GstRtspServer.RTSPMediaFactory):
 
     def do_create_element(self, url):
         global mp4File
-        if (mp4File == ""):
+        # Defualt value to create color bar video
+        if (mp4File == "4080751"):
             mock_pipeline = "videotestsrc pattern=bar horizontal-speed=2 background-color=9228238 foreground-color={0} ! x264enc ! queue ! rtph264pay name=pay0 config-interval=1 pt=96".format(mp4File) 
         else:
             #set mp4 file path to filesrc's location property
@@ -87,14 +88,13 @@ class GstreamerRtspServer():
         mountPoints.add_factory("/stream1", factory)
         self.rtspServer.attach(None)
 
-# Optionally pass in video bar color in decimal format
-# Choose a color: https://www.mathsisfun.com/hexadecimal-decimal-colors.html
+# Optionally pass in video file for streaming, if not use default color bar video
 if __name__ == '__main__':
     global mp4File
     mp4File = os.environ.get('MP4FILE')
     if mp4File is None:
-        mp4File = 4080751
-        print ("Default video bar color is " + str(mp4File))
+        mp4File = "4080751"
+        print ("Default video bar color is 4080751")
     else:
         print ("Using provided video file: " + str(mp4File))
 

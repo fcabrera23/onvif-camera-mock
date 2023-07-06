@@ -91,29 +91,3 @@ Use one of the [tools recommended by onvif_srvd for testing the ONVIF service](h
 | [gsoap-onvif](https://github.com/consensyx/gsoap-onvif) | Linux |
 
 Ensure to run the tool in the same device or same network as your newly mocked camera. In the tool look for a new camera called **TestDev**.
-
-
-### Pass an rstp feed through the "camera" (ONVIF service) 
-Now that we have a camera connected to the network, lets pass some footage through it. This step can be be run as a container or locally.
-
-1. Run the Python program that uses `videotestsrc` to pass a fake stream through the camera of a vertical bar moving horizonally. The implementation was modified from this [StackOverflow discussion](https://stackoverflow.com/questions/59858898/how-to-convert-a-video-on-disk-to-a-rtsp-stream).
-    ```sh
-    sudo ./rtsp-feed.py 
-    ```
-
-    Optionally, configure the color of the feed by passing a color [in decimal format](https://www.mathsisfun.com/hexadecimal-decimal-colors.html) as an argument, such as the following for blue.
-    ```sh
-    sudo ./rtsp-feed.py 3093194
-    ```
-
-### 5. Cleanup
-1. Terminate the ONVIF and Discovery services
-    ```sh
-    ./scripts/stop-onvif-camera.sh
-    ```
-    Or if you'd rather 
-    ```sh
-    curl https://raw.githubusercontent.com/kate-goldenring/onvif-camera-mocking/main/scripts/stop-onvif-camera.sh > ./stop-onvif-camera.sh
-    chmod +x ./stop-onvif-camera.sh
-    ./stop-onvif-camera.sh
-    ```
