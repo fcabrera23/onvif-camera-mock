@@ -71,7 +71,7 @@ class TestRtspMediaFactory(GstRtspServer.RTSPMediaFactory):
             mock_pipeline = "videotestsrc pattern=bar horizontal-speed=2 background-color=9228238 foreground-color={0} ! x264enc ! queue ! rtph264pay name=pay0 config-interval=1 pt=96".format(mp4File) 
         else:
             #set mp4 file path to filesrc's location property
-            src_demux = "filesrc location={} ! qtdemux name=demux".format()
+            src_demux = "filesrc location={} ! qtdemux name=demux".format(mp4File)
             h264_transcode = "demux.video_0"
             mock_pipeline = "{0} {1} ! queue ! rtph264pay name=pay0 config-interval=1 pt=96".format(src_demux, h264_transcode)
  
