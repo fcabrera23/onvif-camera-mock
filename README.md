@@ -60,22 +60,24 @@ The [wsdd](https://github.com/KoynovStas/wsdd) project was forked and update ori
     CHANGELOG.md  generated  gsoap-2.8  LICENSE  Makefile  README.md  SDK  src  start_scripts  wsdd  wsdl
     ```
 
-### 4. Start the ONVIF and Discovery services
+### 4. Start the ONVIF and Discovery services with the RTSP feed
 
 1. Run `ifconfig` or `ipconfig` to determine your network interface. Then, pass your interface (such as `eno1`,`eth0`, `eth1`, etc) to the script. The following assumes `eth0`. 
 
-1. Run the start script specifying the network interface and optionally the resources directory and firmware version of the camera. The script uses the following arguments and defaults:
+1. Run the **main.py** python script to start the discovery services and RTSP feed.  You can specify the network interface and optionally the resources directory, firmware version of the camera and path to the MP4 streaming video file. The script uses the following environmental variables and defaults: 
 
     | Argument | Defaults | Description |
     | -------- | -------- | ----------- |
-    | arg1 | No - Mandatory | Network interface to expose discovery service | 
-    | arg2 | Defaults to `$PWD` | The directory of the project | 
-    | arg3 | Default to 1.0 |  The "mock" firmware version of the camera |
+    | INTERFACE | No - Mandatory | Network interface to expose discovery service | 
+    | DIRECTORY | Defaults to `$PWD` | The directory of the project | 
+    | FIRMWARE | Default to 1.0 |  The "mock" firmware version of the camera |
+    | MP4FILE | Default to mocking color stripe video | sPath to the video mp4 location |
 
     Run the mocking camera using the following command
 
     ```sh
-    ./scripts/start-onvif-camera.sh eth0
+    export INTERFACE=<interface>
+    python3 main.py
     ```
 
 ### 5. Ensure that the ONVIF camera service is running and discoverable
