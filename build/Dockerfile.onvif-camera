@@ -18,10 +18,11 @@ RUN cd /onvif-camera-mock && \
 FROM ubuntu:22.04
 RUN apt update && \
     apt install sudo iproute2 \
-    python3-gi gstreamer-1.0 \ 
+    python3-gi \
     libgstrtspserver-1.0-dev gstreamer1.0-rtsp \
     gstreamer1.0-rtsp gstreamer1.0-plugins-ugly  -y
 
 COPY --from=build /onvif-camera-mock /onvif-camera-mock
+RUN chmod +x /onvif-camera-mock/main.py
 CMD ["/onvif-camera-mock/main.py", "eth0", "/onvif-camera-mock"]
 ENTRYPOINT ["python3"]
