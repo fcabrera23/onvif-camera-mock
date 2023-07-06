@@ -84,11 +84,12 @@ class GstreamerRtspServer():
 # Choose a color: https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 if __name__ == '__main__':
     global color
-    if len(sys.argv) > 1:
-        color = sys.argv[1]
+    if len(sys.argv) > 4:
+        color = sys.argv[4]
         print ("Custom chosen video bar color is " + str(color))
     else:
         color = 4080751
         print ("Default video bar color is " + str(color))
+        
     s = GstreamerRtspServer()
     loop.run()
