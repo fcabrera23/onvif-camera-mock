@@ -23,4 +23,5 @@ RUN apt update && \
     gstreamer1.0-rtsp gstreamer1.0-plugins-ugly  -y
 
 COPY --from=build /onvif-camera-mock /onvif-camera-mock
-ENTRYPOINT ["bash /onvif-camera-mock/start-onvif-camera.sh eth0 /onvif-camera/"]
+CMD ["/onvif-camera-mock/main.py", "eth0", "/onvif-camera-mock"]
+ENTRYPOINT ["python3"]
