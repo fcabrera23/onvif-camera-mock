@@ -9,25 +9,25 @@ gi.require_version('GstRtspServer', '1.0')
 from gi.repository import Gst, GstRtspServer, GObject, GLib
 
 # Ask wsdd nicely to terminate.
-if len(sys.argv) < 2:
+interface = os.environ.get('INTERFACE')
+if interface is None:
     print("No interface such as 'eth0' or 'eno1' provided")
     sys.exit(1)
 
-interface = sys.argv[1]
-
-if len(sys.argv) > 2:
-    print("Using provided directory. The script was executed from:: {}".format(sys.argv[2]))
-    directory = sys.argv[2]
-else:
+directory = os.environ.get('DIRECTORY')
+if directory is None:
     print("No scripts directory provided. Using the directory the script was executed from: {}".format(os.getcwd()))
-    directory = os.getcwd()
-
-if len(sys.argv) > 3:
-    firmware_ver = sys.argv[3]
+    directory = os.getcwd() 
 else:
-    print("No firmware version provided. Using default 1.0")
-    firmware_ver = "1.0"
+    print("Using provided directory. The script was executed from:: {}".format(directory))
 
+firmware_ver = os.environ.get('FIRMWARE')
+if firmware_ver is None:  
+    print("No firmware version provided. Using default 1.0")
+    firmware_ver = "1.0" 
+else:
+    print("Using provided firmware version: {}".format(firmware_ver))
+    
 if os.system("pgrep wsdd > /dev/null") == 0:
     print("Killing previous wssd instances")
     os.system("sudo pkill wsdd")
@@ -66,8 +66,15 @@ class TestRtspMediaFactory(GstRtspServer.RTSPMediaFactory):
         GstRtspServer.RTSPMediaFactory.__init__(self)
 
     def do_create_element(self, url):
-        global color
-        mock_pipeline = "videotestsrc pattern=bar horizontal-speed=2 background-color=9228238 foreground-color={0} ! x264enc ! queue ! rtph264pay name=pay0 config-interval=1 pt=96".format(color) 
+        global mp4File
+        if (mp4File == ""):
+            mock_pipeline = "videotestsrc pattern=bar horizontal-speed=2 background-color=9228238 foreground-color={0} ! x264enc ! queue ! rtph264pay name=pay0 config-interval=1 pt=96".format(mp4File) 
+        else:
+            #set mp4 file path to filesrc's location property
+            src_demux = "filesrc location={} ! qtdemux name=demux".format()
+            h264_transcode = "demux.video_0"
+            mock_pipeline = "{0} {1} ! queue ! rtph264pay name=pay0 config-interval=1 pt=96".format(src_demux, h264_transcode)
+ 
         print ("Pipeling launching: " + mock_pipeline)
         return Gst.parse_launch(mock_pipeline)
 
@@ -83,13 +90,13 @@ class GstreamerRtspServer():
 # Optionally pass in video bar color in decimal format
 # Choose a color: https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 if __name__ == '__main__':
-    global color
-    if len(sys.argv) > 4:
-        color = sys.argv[4]
-        print ("Custom chosen video bar color is " + str(color))
+    global mp4File
+    mp4File = os.environ.get('MP4FILE')
+    if mp4File is None:
+        mp4File = 4080751
+        print ("Default video bar color is " + str(mp4File))
     else:
-        color = 4080751
-        print ("Default video bar color is " + str(color))
-        
+        print ("Using provided video file: " + str(mp4File))
+
     s = GstreamerRtspServer()
     loop.run()
