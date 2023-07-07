@@ -24,5 +24,7 @@ RUN apt update && \
 
 COPY --from=build /onvif-camera-mock /onvif-camera-mock
 RUN chmod +x /onvif-camera-mock/main.py
+EXPOSE 8554
+EXPOSE 1000
 CMD ["/onvif-camera-mock/main.py", "eth0", "/onvif-camera-mock"]
 ENTRYPOINT ["python3"]
