@@ -16,8 +16,8 @@ if interface is None:
 
 directory = os.environ.get('DIRECTORY')
 if directory is None:
-    print("No scripts directory provided. Using the directory the script was executed from: {}".format(os.getcwd()))
-    directory = os.getcwd() 
+    directory = "/onvif-camera-mock"
+    print("No scripts directory provided. Using the directory the script was executed from: {}".format(directory))
 else:
     print("Using provided directory. The script was executed from:: {}".format(directory))
 
@@ -76,7 +76,7 @@ class TestRtspMediaFactory(GstRtspServer.RTSPMediaFactory):
             h264_transcode = "demux.video_0"
             mock_pipeline = "{0} {1} ! queue ! rtph264pay name=pay0 config-interval=1 pt=96".format(src_demux, h264_transcode)
  
-        print ("Pipeling launching: " + mock_pipeline)
+        print ("Pipeling launching: {}".format(mock_pipeline))
         return Gst.parse_launch(mock_pipeline)
 
 class GstreamerRtspServer():
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         mp4File = "4080751"
         print ("Default video bar color is 4080751")
     else:
-        print ("Using provided video file: " + str(mp4File))
+        print ("Using provided video file: {}".format(str(mp4File)))
 
     s = GstreamerRtspServer()
     loop.run()

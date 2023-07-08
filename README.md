@@ -1,6 +1,11 @@
 # onvif-camera-mocking
-This project started is a fork from [kate-goldenring/onvif-camera-mocking](https://github.com/kate-goldenring/onvif-camera-mocking)
-This project consists of tools and instructions for mocking an ONVIF compliant IP camera and passing an RTSP stream through it.
+This project started as a fork from [kate-goldenring/onvif-camera-mocking](https://github.com/kate-goldenring/onvif-camera-mocking)
+This project consists of tools and instructions for mocking an ONVIF-compliant IP camera and passing an RTSP stream to simulate a live video stream.
+
+If you want to use the container without building it, you can download it using the following command:
+```bash
+docker pull winiotsaleskit.azurecr.io/onvif-camera-mocking:latest
+```
 
 ## Steps
 > Note: these steps only work on Linux and have only been tested on Ubuntu 22.04LTS
@@ -14,7 +19,7 @@ This project consists of tools and instructions for mocking an ONVIF compliant I
         git g++ wget -y
     ```
 
-1. Install gstreamer depdencies
+1. Install gstreamer dependencies
     ```sh
     sudo apt update
     sudo apt install gstreamer-1.0 libgstrtspserver-1.0-dev gstreamer1.0-rtsp \
@@ -28,7 +33,7 @@ This project consists of tools and instructions for mocking an ONVIF compliant I
 
 ### 2. Build the ONVIF server
 
-The [onvif_srvd](./onvif_srvd/) project was forked and update original depdencies to keep it up to date with [gsoap](https://github.com/Genivia/gsoap) version and fix broken dependencies.
+The [onvif_srvd](./onvif_srvd/) project was forked, and the updated original dependencies to keep it up to date with [gsoap](https://github.com/Genivia/gsoap) version and fix broken dependencies.
 
 1. Build the **onvif_srvd**    
     ```sh
@@ -36,7 +41,7 @@ The [onvif_srvd](./onvif_srvd/) project was forked and update original depdencie
     make release
     ```
 
-1. Ensure the build was created - Using `ls` command, check the **onvif_srvd** is available. You should see something like this:
+1. Ensure the build was created - Using the `ls` command, check the **onvif_srvd** is available. You should see something like this:
 
     ```sh
     ubuntu@NUC-Ubuntu:/home/ubuntu/onvif-camera-mocking/onvif_srvd# ls
@@ -45,7 +50,7 @@ The [onvif_srvd](./onvif_srvd/) project was forked and update original depdencie
 
 ### 3. Build the WS-Discovery Service
 
-The [wsdd](https://github.com/KoynovStas/wsdd) project was forked and update original depdencies to keep it up to date with [gsoap](https://github.com/Genivia/gsoap) version and fix broken dependencies.
+The [wsdd](https://github.com/KoynovStas/wsdd) project was forked, and the updated original dependencies to keep it up to date with [gsoap](https://github.com/Genivia/gsoap) version and fix broken dependencies.
 
 1. Move to the project root folder and build the **wsdd**    
     ```sh
@@ -53,18 +58,18 @@ The [wsdd](https://github.com/KoynovStas/wsdd) project was forked and update ori
     make release
     ```
 
-1. Ensure the build was created - Using `ls` command, check the **wssd** is available. You should see something like this:
+1. Ensure the build was created - Using the `ls` command, check the **used** is available. You should see something like this:
 
     ```sh
-    ubuntu@NUC-Ubuntu:/home/ubntu/onvif-camera-mocking/wsdd# ls
-    CHANGELOG.md  generated  gsoap-2.8  LICENSE  Makefile  README.md  SDK  src  start_scripts  wsdd  wsdl
+    ubuntu@NUC-Ubuntu:/home/ubuntu/onvif-camera-mocking/wsdd# ls
+    CHANGELOG.md  generated soap-2.8 LICENSE  Makefile  README.md  SDK  src  start_scripts  wsdd  wsdl
     ```
 
 ### 4. Start the ONVIF and Discovery services with the RTSP feed
 
 1. Run `ifconfig` or `ipconfig` to determine your network interface. Then, pass your interface (such as `eno1`,`eth0`, `eth1`, etc) to the script. The following assumes `eth0`. 
 
-1. Run the **main.py** python script to start the discovery services and RTSP feed.  You can specify the network interface and optionally the resources directory, firmware version of the camera and path to the MP4 streaming video file. The script uses the following environmental variables and defaults: 
+1. Run the **main.py** python script to start the discovery services and RTSP feed. You can specify the network interface and optionally the resources directory, firmware version of the camera, and path to the MP4 streaming video file. The script uses the following environment variables and defaults: 
 
     | Argument | Defaults | Description |
     | -------- | -------- | ----------- |
@@ -73,7 +78,7 @@ The [wsdd](https://github.com/KoynovStas/wsdd) project was forked and update ori
     | FIRMWARE | Default to 1.0 |  The "mock" firmware version of the camera |
     | MP4FILE | Default to mocking color stripe video | sPath to the video mp4 location |
 
-    Run the mocking camera using the following command
+    Run the mocking camera using the following command:
 
     ```sh
     export INTERFACE=<interface>
@@ -90,4 +95,26 @@ Use one of the [tools recommended by onvif_srvd for testing the ONVIF service](h
 | [ONVIF Device Tool (GUI)](https://lingodigit.com/onvif_nvc.html) | Linux | 
 | [gsoap-onvif](https://github.com/consensyx/gsoap-onvif) | Linux |
 
-Ensure to run the tool in the same device or same network as your newly mocked camera. In the tool look for a new camera called **TestDev**.
+Run the tool on the same device or network as your newly mocked camera. In the tool, look for a new camera called **TestDev**.
+
+### 6. Build Docker container
+
+You can build this as a container using the [Dockerfile.onvif-camera]. _Note: Building the container can take up to 20-30 minutes._
+Once built, make sure to run it with the appropriate environment variables mentioned in **Section 4**.
+
+### 7. Run it with Akri and Kubernetes
+
+- If you are using [K3s](https://k3s.io/) on top of a Linux device, please follow the [ONVIF for IP cameras guide](https://docs.akri.sh/discovery-handlers/onvif).
+
+    Once you have your Kubernetes cluster running and Akri installed, run the following command to enable the ONVIF discovery:
+    ```bash
+    sudo ip route add 239.255.255.250/32 dev cni0
+    ```
+    _Note: If you're not using **Flannel**, you may need to check the Kubernetes network interface name and change it above._
+
+- If you are using [AKS Edge Essentials](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-overview), please follow the [Discover ONVIF cameras with Akri](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-how-to-akri-onvif).
+
+     Once you have your Kubernetes cluster running and Akri installed, run the following PowerShell command to enable the ONVIF discovery:
+    ```powershell
+    Invoke-AksEdgeNodeCommand -command "sudo ip route add 239.255.255.250/32 dev cni0"
+    ```
