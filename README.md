@@ -130,47 +130,48 @@ Once built, make sure to run it with the appropriate environment variables menti
     Finally, you need to modify your Pod deployment to mount the necessary file and use that file in the RTSP streamer server. The following example uses the public docker container and mounts the file *sample.mp4* to create the RSTP stream, but you can change the deployment for your environment.
 
     ```yaml
-    apiVersion: apps/v1
-    kind: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onvif-camera-mocking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: onvif-camera-mocking
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5    
+  template:
     metadata:
-    name: onvif-camera-mocking
-    spec:
-    replicas: 1
-    selector:
-        matchLabels:
+      labels:
         app: onvif-camera-mocking
-    strategy:
-        rollingUpdate:
-        maxSurge: 1
-        maxUnavailable: 1
-    minReadySeconds: 5
-    template:
-        metadata:
-        labels:
-            app: onvif-camera-mocking
-        spec:
-        nodeSelector:
-            "kubernetes.io/os": linux
-        containers:
-        - name: azure-vote-front
-            image: winiotsaleskit.azurecr.io/onvif-camera-mocking:latest
-            ports:
-            - containerPort: 8554
-            - containerPort: 1000
-            - containerPort: 3702
-            env:
-            - name: INTERFACE
-            value: "eth0"
-            - name: DIRECTORY
-            value: "/onvif-camera-mock"
-            - name: MP4FILE
-            value: /mnt/sample.mp4
-            volumeMounts:
-            - name: sample-volume
-            mountPath: /mnt
-        volumes:
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+      - name: azure-vote-front
+        image: winiotsaleskit.azurecr.io/onvif-camera-mocking:latest
+        ports:
+        - containerPort: 8554
+        - containerPort: 1000
+        - containerPort: 3702
+        env:
+        - name: INTERFACE
+          value: "eth0"
+        - name: DIRECTORY
+          value: "/onvif-camera-mock"
+        - name: MP4FILE
+          value: /mnt/sample.mp4
+        volumeMounts:
         - name: sample-volume
-            hostPath:
-            path: /home/aksedge-user
-            type: Directory
+          mountPath: /mnt
+      volumes:
+      - name: sample-volume
+        hostPath:
+           path: /home/aksedge-user
+           type: Directory
     ```
