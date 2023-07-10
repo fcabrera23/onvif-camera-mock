@@ -112,14 +112,32 @@ Once built, make sure to run it with the appropriate environment variables menti
     ```
     _Note: If you're not using **Flannel**, you may need to check the Kubernetes network interface name and change it above._
 
-- If you are using [AKS Edge Essentials](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-overview), please follow the [Discover ONVIF cameras with Akri](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-how-to-akri-onvif).
+- If you are using [AKS Edge Essentials](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-overview), please follow the [Discover ONVIF cameras with Akri](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-how-to-akri-onvif) guide.
 
      Once you have your Kubernetes cluster running and Akri installed, run the following PowerShell command to enable the ONVIF discovery:
     ```powershell
     Invoke-AksEdgeNodeCommand -command "sudo ip route add 239.255.255.250/32 dev cni0"
     ```
+    
+    If you're using **Scalable-cluster** with an 8*External virtual switch**, you will need to enable the `--dport 3702` firewall rule using the following command:
 
-    If you want to create an RTSP feed with a custom video, copy the video file into the AKS-EE host first. For example, if you want to use the *sample.mp4* file from your directory `C:\Users\Admin\sample.mp4`, copy it to the AKS-EE Linux node `/home/aksedge-user/sample.mp4` file using the following cmd:
+    ```powershell
+    Invoke-AksEdgeNodeCommand -command "sudo iptables -A INPUT -p udp --dport 3702 -j ACCEPT"
+    Invoke-AksEdgeNodeCommand -command "sudo iptables-save | sudo tee /etc/systemd/scripts/ip4save > /dev/null    
+    ```
+
+    If you everything was correctly set up, you should see the mocked camera discovered by Akri.
+
+    ```powershell
+    PS C:\Users\Administrator\Desktop> kubectl get akrii
+    NAME                CONFIG       SHARED   NODES             AGE
+    akri-onvif-c9582f   akri-onvif   true     ["node1-ledge"]   7m28s
+    PS C:\Users\Administrator\Desktop>
+    ```
+
+    ### 8. Using a custom video RTSP feed
+
+    Finally, if you want to create an RTSP feed with a custom video, copy the video file into the AKS-EE host first. For example, if you want to use the *sample.mp4* file from your directory `C:\Users\Admin\sample.mp4`, copy it to the AKS-EE Linux node `/home/aksedge-user/sample.mp4` file using the following cmd:
 
     ```powershell
     Copy-AksEdgeNodeFile -FromFile C:\Users\fcabrera\Downloads\sample-15s.mp4 -toFile /home/aksedge-user/sample.mp4 -PushFile
@@ -127,51 +145,51 @@ Once built, make sure to run it with the appropriate environment variables menti
 
     For more information, see [Copy-AksEdgeNodeFile](https://learn.microsoft.com/en-us/azure/aks/hybrid/reference/aks-edge-ps/copy-aksedgenodefile).
 
-    Finally, you need to modify your Pod deployment to mount the necessary file and use that file in the RTSP streamer server. The following example uses the public docker container and mounts the file *sample.mp4* to create the RSTP stream, but you can change the deployment for your environment.
+    Last step is to modify your Pod deployment to mount the necessary file and use that file in the RTSP streamer server. The following example uses the public docker container and mounts the file *sample.mp4* to create the RSTP stream, but you can change the deployment for your environment.
 
-    ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: onvif-camera-mocking
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: onvif-camera-mocking
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-  minReadySeconds: 5    
-  template:
-    metadata:
-      labels:
+  ```yaml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: onvif-camera-mocking
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
         app: onvif-camera-mocking
-    spec:
-      nodeSelector:
-        "kubernetes.io/os": linux
-      containers:
-      - name: azure-vote-front
-        image: winiotsaleskit.azurecr.io/onvif-camera-mocking:latest
-        ports:
-        - containerPort: 8554
-        - containerPort: 1000
-        - containerPort: 3702
-        env:
-        - name: INTERFACE
-          value: "eth0"
-        - name: DIRECTORY
-          value: "/onvif-camera-mock"
-        - name: MP4FILE
-          value: /mnt/sample.mp4
-        volumeMounts:
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+    minReadySeconds: 5    
+    template:
+      metadata:
+        labels:
+          app: onvif-camera-mocking
+      spec:
+        nodeSelector:
+          "kubernetes.io/os": linux
+        containers:
+        - name: azure-vote-front
+          image: winiotsaleskit.azurecr.io/onvif-camera-mocking:latest
+          ports:
+          - containerPort: 8554
+          - containerPort: 1000
+          - containerPort: 3702
+          env:
+          - name: INTERFACE
+            value: "eth0"
+          - name: DIRECTORY
+            value: "/onvif-camera-mock"
+          - name: MP4FILE
+            value: /mnt/sample.mp4
+          volumeMounts:
+          - name: sample-volume
+            mountPath: /mnt
+        volumes:
         - name: sample-volume
-          mountPath: /mnt
-      volumes:
-      - name: sample-volume
-        hostPath:
-           path: /home/aksedge-user
-           type: Directory
+          hostPath:
+            path: /home/aksedge-user
+            type: Directory
     ```
