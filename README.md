@@ -119,11 +119,11 @@ Once built, make sure to run it with the appropriate environment variables menti
     Invoke-AksEdgeNodeCommand -command "sudo ip route add 239.255.255.250/32 dev cni0"
     ```
     
-    If you're using **Scalable-cluster** with an 8*External virtual switch**, you will need to enable the `--dport 3702` firewall rule using the following command:
+    If you're using **Scalable-cluster** with an **External virtual switch**, you will need to enable the `--dport 3702` firewall rule using the following command:
 
     ```powershell
     Invoke-AksEdgeNodeCommand -command "sudo iptables -A INPUT -p udp --dport 3702 -j ACCEPT"
-    Invoke-AksEdgeNodeCommand -command "sudo iptables-save | sudo tee /etc/systemd/scripts/ip4save > /dev/null    
+    Invoke-AksEdgeNodeCommand -command "sudo iptables-save | sudo tee /etc/systemd/scripts/ip4save > /dev/null"    
     ```
 
     If you everything was correctly set up, you should see the mocked camera discovered by Akri.
