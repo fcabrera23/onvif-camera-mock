@@ -111,6 +111,15 @@ Once built, make sure to run it with the appropriate environment variables menti
     sudo ip route add 239.255.255.250/32 dev cni0
     ```
     _Note: If you're not using **Flannel**, you may need to check the Kubernetes network interface name and change it above._
+    1. Find the IP of the mock ONVIF container:
+    ```bash
+    kubectl get pods -o wide
+    ```
+    2. Run `route` and find the network interface name that matches the IP of the ONVIF pod (i.e. `cali909b8c65537`).
+    3. Now enable the ONVIF discovery:
+    ```bash
+    sudo ip route add 239.255.255.250/32 dev <insert interface name>
+    ```
 
 - If you are using [AKS Edge Essentials](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-overview), please follow the [Discover ONVIF cameras with Akri](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-how-to-akri-onvif) guide.
 
@@ -118,12 +127,29 @@ Once built, make sure to run it with the appropriate environment variables menti
     ```powershell
     Invoke-AksEdgeNodeCommand -command "sudo ip route add 239.255.255.250/32 dev cni0"
     ```
-    
-    If you're using **Scalable-cluster** with an **External virtual switch**, you will need to enable the `--dport 3702` firewall rule using the following command:
+    _Note: If you're not using **Flannel**, you may need to check the Kubernetes network interface name and change it above._
+    1. Find the IP of the mock ONVIF container:
+    ```powershell
+    kubectl get pods -o wide
+    ```
+    2.Find the network interface name that matches the IP of the ONVIF pod (i.e. `cali909b8c65537`):
 
     ```powershell
-    Invoke-AksEdgeNodeCommand -command "sudo iptables -A INPUT -p udp --dport 3702 -j ACCEPT"
-    Invoke-AksEdgeNodeCommand -command "sudo iptables-save | sudo tee /etc/systemd/scripts/ip4save > /dev/null"    
+    Invoke-AksEdgeNodeCommand -NodeType "Linux" -command "route"
+    ```
+
+    3. Now enable the ONVIF discovery:
+    ```powershell
+    Invoke-AksEdgeNodeCommand -NodeType "Linux" -command "sudo ip route add 239.255.255.250/32 dev <insert interface name>"
+    ```
+    
+    If you're using **Scalable-cluster** with an **External virtual switch**, you will need to enable the `--dport 3702` and `--sport 3702` firewall rule using the following command:
+
+    ```powershell
+    Invoke-AksEdgeNodeCommand -NodeType "Linux" -command "sudo iptables -A INPUT -p udp --dport 3702 -j ACCEPT"
+    Invoke-AksEdgeNodeCommand -NodeType "Linux" -command "sudo sed -i '/-A OUTPUT -j ACCEPT/i-A INPUT -p udp -m udp --dport 3702 -j ACCEPT' /etc/systemd/scripts/ip4save"   
+    Invoke-AksEdgeNodeCommand -NodeType "Linux" -command "sudo iptables -A INPUT -p udp --sport 3702 -j ACCEPT"
+    Invoke-AksEdgeNodeCommand -NodeType "Linux" -command "sudo sed -i '/-A OUTPUT -j ACCEPT/i-A INPUT -p udp -m udp --sport 3702 -j ACCEPT' /etc/systemd/scripts/ip4save" 
     ```
 
     If you everything was correctly set up, you should see the mocked camera discovered by Akri.
