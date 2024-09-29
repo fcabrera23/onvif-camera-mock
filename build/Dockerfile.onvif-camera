@@ -1,8 +1,9 @@
 # Build from root of repo with `docker build -t onvif-build -f ./build/Dockerfile.onvif-camera .`
 FROM ubuntu:22.04 as build
 WORKDIR /
-RUN apt update && apt upgrade -y
-RUN apt install \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install \
     flex bison byacc make m4 autoconf unzip \
     git g++ wget -y
 
@@ -16,9 +17,11 @@ RUN cd /onvif-camera-mock && \
     cd onvif_srvd && \
     make release
 
+# Deployment container
 FROM ubuntu:22.04
-RUN apt update && \
-    apt install sudo iproute2 \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install sudo iproute2 \
     python3-gi \
     libgstrtspserver-1.0-dev gstreamer1.0-rtsp \
     gstreamer1.0-rtsp gstreamer1.0-plugins-ugly  -y
