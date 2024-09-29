@@ -6,8 +6,9 @@ RUN apt install \
     flex bison byacc make m4 autoconf unzip \
     git g++ wget -y
 
-RUN git clone https://github.com/fcabrera23/onvif-camera-mock && \
-    cd /onvif-camera-mock && \
+ADD . /onvif-camera-mock/
+
+RUN cd /onvif-camera-mock && \
     cd wsdd && \
     make release
 
