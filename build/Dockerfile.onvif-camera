@@ -1,7 +1,7 @@
 # Build from root of repo with `docker build -t onvif-build -f ./build/Dockerfile.onvif-camera .`
 FROM ubuntu:22.04 as build
 WORKDIR /
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install \
     flex bison byacc make m4 autoconf unzip \
@@ -19,7 +19,7 @@ RUN cd /onvif-camera-mock && \
 
 # Deployment container
 FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install sudo iproute2 \
     python3-gi \
