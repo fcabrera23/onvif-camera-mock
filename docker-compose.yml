@@ -1,0 +1,13 @@
+
+services:
+  onvif-camera:
+    container_name: onvif-camera 
+    build: 
+        context: .
+        dockerfile: build/Dockerfile.onvif-camera
+    restart: unless-stopped
+    devices:
+      - /dev/video0:/dev/video0
+  # Required if rwx not set on above devices on host
+  #  privileged: true
+
